@@ -26,7 +26,20 @@ public class GardeningDiaryApplication {
 
     @EventListener(ApplicationReadyEvent.class)
     public void initializeFirebase() throws IOException {
-        InputStream serviceAccount = new ClassPathResource("diarygarden-7bb2d-firebase-adminsdk-fbsvc-e77de73a02.json").getInputStream();
+        InputStream serviceAccount;
+        
+        // 환경 변수에서 Firebase 자격 증명 확인
+        String firebaseCredentials = System.getenv("FIREBASE_CREDENTIALS");
+        
+        if (firebaseCredentials != null && !firebaseCredentials.isEmpty()) {
+            // 환경 변수에서 JSON을 읽어옴 (GCP 배포 시)
+            serviceAccount = new java.io.ByteArrayInputStream(firebaseCredentials.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            System.out.println("Firebase credentials loaded from environment variable.");
+        } else {
+            // 로컬 개발 환경에서는 파일에서 읽어옴
+            serviceAccount = new ClassPathResource("diarygarden-7bb2d-firebase-adminsdk-fbsvc-e77de73a02.json").getInputStream();
+            System.out.println("Firebase credentials loaded from classpath.");
+        }
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
