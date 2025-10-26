@@ -10,6 +10,12 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      # GCP 프로젝트 ID 설정
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-diarygarden-7bb2d}
+      # Firebase 키를 환경 변수로 전달 (.env 파일 사용 권장)
+      - FIREBASE_CREDENTIALS=${FIREBASE_CREDENTIALS}
+      # GCP Secret Manager 시크릿 이름 (Secret Manager 사용 시)
+      - FIREBASE_SECRET_NAME=${FIREBASE_SECRET_NAME}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
