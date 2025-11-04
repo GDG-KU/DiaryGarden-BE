@@ -36,3 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 src/main/resources/*.json
+# ignore firebase service account
+src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
