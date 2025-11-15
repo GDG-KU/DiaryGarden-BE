@@ -1,10 +1,10 @@
 package com.GDG.worktree.team2.gardening_diary.entity;
 
-import com.google.cloud.firestore.annotation.DocumentId;
-import com.google.cloud.firestore.annotation.ServerTimestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+
+import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.ServerTimestamp;
 
 /**
  * 정원/나무 엔티티
@@ -19,8 +19,8 @@ public class Garden {
     private int diaryCount; // 다이어리 개수
     private List<String> leafColors; // 잎 색상 목록
     private String treeSnapshot; // 나무 스냅샷 이미지 URL
-    private LocalDateTime weekStartDate; // 주 시작 날짜
-    private LocalDateTime weekEndDate; // 주 종료 날짜
+    private Date weekStartDate; // 주 시작 날짜
+    private Date weekEndDate; // 주 종료 날짜
     
     @ServerTimestamp
     private Date createdAt;
@@ -96,19 +96,19 @@ public class Garden {
         this.treeSnapshot = treeSnapshot;
     }
     
-    public LocalDateTime getWeekStartDate() {
+    public Date getWeekStartDate() {
         return weekStartDate;
     }
-    
-    public void setWeekStartDate(LocalDateTime weekStartDate) {
+
+    public void setWeekStartDate(Date weekStartDate) {
         this.weekStartDate = weekStartDate;
     }
     
-    public LocalDateTime getWeekEndDate() {
+    public Date getWeekEndDate() {
         return weekEndDate;
     }
-    
-    public void setWeekEndDate(LocalDateTime weekEndDate) {
+
+    public void setWeekEndDate(Date weekEndDate) {
         this.weekEndDate = weekEndDate;
     }
     

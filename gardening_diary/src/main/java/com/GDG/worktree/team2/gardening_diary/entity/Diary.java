@@ -2,9 +2,7 @@ package com.GDG.worktree.team2.gardening_diary.entity;
 
 import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.firestore.annotation.ServerTimestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 다이어리 엔티티
@@ -16,7 +14,7 @@ public class Diary {
     private String userId; // 사용자 ID
     private String treeId; // 나무 ID (gardens 컬렉션 참조)
     private String content; // 내용
-    private LocalDateTime writtenDate; // 작성 날짜
+    private Date writtenDate; // 작성 날짜 (Firestore 호환 Date 타입)
     
     @ServerTimestamp
     private Date createdAt;
@@ -32,7 +30,7 @@ public class Diary {
         this.userId = userId;
         this.treeId = treeId;
         this.content = content;
-        this.writtenDate = LocalDateTime.now();
+        this.writtenDate = new Date();
     }
     
     // Getters and Setters
@@ -68,11 +66,11 @@ public class Diary {
         this.content = content;
     }
     
-    public LocalDateTime getWrittenDate() {
+    public Date getWrittenDate() {
         return writtenDate;
     }
-    
-    public void setWrittenDate(LocalDateTime writtenDate) {
+
+    public void setWrittenDate(Date writtenDate) {
         this.writtenDate = writtenDate;
     }
     

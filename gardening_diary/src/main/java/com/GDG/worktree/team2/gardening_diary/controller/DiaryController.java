@@ -34,7 +34,7 @@ public class DiaryController {
             // 토큰 검증 및 사용자 ID 추출
             String userId = getUserIdFromToken(token);
             if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
             
             Diary diary = diaryService.createDiary(userId, request);
@@ -49,16 +49,28 @@ public class DiaryController {
      * 다이어리 조회 (ID로)
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Diary>> getDiary(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<Diary>> getDiary(
+            @RequestHeader("Authorization") String token,
+            @PathVariable String id) {
         try {
-            Diary diary = diaryService.getDiaryById(id);
-            
-            if (diary != null) {
-                return ResponseEntity.ok(new ApiResponse<>(diary, "다이어리 조회 성공"));
-            } else {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("다이어리를 찾을 수 없습니다"));
+            // 인증 확인
+            String userId = getUserIdFromToken(token);
+            if (userId == null) {
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
-            
+
+            Diary diary = diaryService.getDiaryById(id);
+            if (diary == null) {
+                return ResponseEntity.status(404).body(new ApiResponse<>("다이어리를 찾을 수 없습니다"));
+            }
+
+            // 소유권 확인
+            if (!userId.equals(diary.getUserId())) {
+                return ResponseEntity.status(403).body(new ApiResponse<>("다이어리 조회 권한이 없습니다"));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(diary, "다이어리 조회 성공"));
+
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("다이어리 조회 실패: " + e.getMessage()));
         }
@@ -77,7 +89,7 @@ public class DiaryController {
             // 토큰 검증 및 사용자 ID 추출
             String userId = getUserIdFromToken(token);
             if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
             
             List<Diary> diaries;
@@ -107,13 +119,17 @@ public class DiaryController {
             // 토큰 검증 및 사용자 ID 추출
             String userId = getUserIdFromToken(token);
             if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
             
             Diary diary = diaryService.updateDiary(id, userId, request);
             return ResponseEntity.ok(new ApiResponse<>(diary, "다이어리가 수정되었습니다"));
             
         } catch (IllegalArgumentException e) {
+            // 소유권 관련 예외는 403, 그 외는 400
+            if (e.getMessage() != null && e.getMessage().contains("권한")) {
+                return ResponseEntity.status(403).body(new ApiResponse<>(e.getMessage()));
+            }
             return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("다이어리 수정 실패: " + e.getMessage()));
@@ -132,7 +148,7 @@ public class DiaryController {
             // 토큰 검증 및 사용자 ID 추출
             String userId = getUserIdFromToken(token);
             if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
             
             boolean success = diaryService.deleteDiary(id, userId);
@@ -144,6 +160,9 @@ public class DiaryController {
             }
             
         } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().contains("권한")) {
+                return ResponseEntity.status(403).body(new ApiResponse<>(e.getMessage()));
+            }
             return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("다이어리 삭제 실패: " + e.getMessage()));
@@ -159,7 +178,7 @@ public class DiaryController {
             // 토큰 검증 및 사용자 ID 추출
             String userId = getUserIdFromToken(token);
             if (userId == null) {
-                return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
+                return ResponseEntity.status(401).body(new ApiResponse<>("인증이 필요합니다"));
             }
             
             long count = diaryService.getDiaryCount(userId);
@@ -188,6 +207,19 @@ public class DiaryController {
         } catch (Exception e) {
             System.err.println("토큰 검증 실패: " + e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * 나무별 다이어리 조회 엔드포인트
+     */
+    @GetMapping("/tree/{treeId}")
+    public ResponseEntity<ApiResponse<List<Diary>>> getDiariesByTreeId(@PathVariable String treeId) {
+        try {
+            List<Diary> diaries = diaryService.getDiariesByTreeId(treeId);
+            return ResponseEntity.ok(new ApiResponse<>(diaries, "나무별 다이어리 조회 성공"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("다이어리 조회 실패: " + e.getMessage()));
         }
     }
 }
