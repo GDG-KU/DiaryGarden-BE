@@ -77,10 +77,10 @@ public class DiaryRepository {
     public List<Diary> findByUserIdWithPaging(String userId, int limit, String lastDocId) 
             throws ExecutionException, InterruptedException {
         
-        Query query = firestore.collection(COLLECTION_NAME)
-                .whereEqualTo("userId", userId)
-                .orderBy("writtenDate", Query.Direction.DESCENDING)
-                .limit(limit);
+    Query query = firestore.collection(COLLECTION_NAME)
+        .whereEqualTo("userId", userId)
+        .orderBy("createdAt", Query.Direction.DESCENDING)
+        .limit(limit);
         
         // 페이징을 위한 커서 처리
         if (lastDocId != null && !lastDocId.isEmpty()) {
@@ -105,9 +105,9 @@ public class DiaryRepository {
      * 나무별 다이어리 조회
      */
     public List<Diary> findByTreeId(String treeId) throws ExecutionException, InterruptedException {
-        Query query = firestore.collection(COLLECTION_NAME)
-                .whereEqualTo("treeId", treeId)
-                .orderBy("writtenDate", Query.Direction.ASCENDING);
+    Query query = firestore.collection(COLLECTION_NAME)
+        .whereEqualTo("treeId", treeId)
+        .orderBy("createdAt", Query.Direction.ASCENDING);
         
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
         QuerySnapshot documents = querySnapshot.get();
