@@ -1,17 +1,32 @@
 package com.GDG.worktree.team2.gardening_diary.controller;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.GDG.worktree.team2.gardening_diary.dto.ApiResponse;
 import com.GDG.worktree.team2.gardening_diary.dto.AuthResponse;
 import com.GDG.worktree.team2.gardening_diary.dto.LoginRequest;
 import com.GDG.worktree.team2.gardening_diary.dto.RegisterRequest;
 import com.GDG.worktree.team2.gardening_diary.entity.User;
 import com.GDG.worktree.team2.gardening_diary.service.AuthService;
+import com.GDG.worktree.team2.gardening_diary.service.GoogleAuthService;
+
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 인증 컨트롤러
@@ -19,10 +34,13 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuthController {
     
     @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    private final GoogleAuthService googleAuthService;
+
 
     // Authorization 헤더 검사 및 토큰 검증(유효하지 않으면 401 발생, 유효하면 AuthResponse 반환)
     private AuthResponse requireValidAuth(String authorizationHeader) {
@@ -41,7 +59,6 @@ public class AuthController {
     /**
      * 아이디/비밀번호 회원가입
      */
-    
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
@@ -64,6 +81,25 @@ public class AuthController {
             return ResponseEntity.ok(new ApiResponse<>(response, "아이디 확인 완료"));
         } else {
             return ResponseEntity.badRequest().body(new ApiResponse<>(response.getMessage()));
+        }
+    }
+
+    // 구글 로그인
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@RequestBody Map<String, String> body) {
+        String idToken = body.get("idToken");
+
+        if (idToken == null || idToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>("Google ID Token missing"));
+        }
+
+        try {
+            User user = googleAuthService.loginWithGoogle(idToken);
+            AuthResponse tokenResponse = authService.generateTokenForSocialUser(user);
+            return ResponseEntity.ok(new ApiResponse<>(tokenResponse, "구글 로그인 성공"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponse<>("구글 로그인 실패: " + e.getMessage()));
         }
     }
     

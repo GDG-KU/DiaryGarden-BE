@@ -1,14 +1,21 @@
+//UserRepository.java
 package com.GDG.worktree.team2.gardening_diary.repository;
-
-import com.GDG.worktree.team2.gardening_diary.entity.User;
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.GDG.worktree.team2.gardening_diary.entity.User;
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
+import com.google.cloud.firestore.DocumentSnapshot;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.google.cloud.firestore.WriteResult;
 
 /**
  * 사용자 Repository

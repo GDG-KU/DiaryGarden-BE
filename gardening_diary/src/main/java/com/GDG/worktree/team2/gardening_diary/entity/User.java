@@ -1,12 +1,19 @@
+//User.java
 package com.GDG.worktree.team2.gardening_diary.entity;
+
+import java.util.Date;
 
 import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.firestore.annotation.ServerTimestamp;
-import java.util.Date;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * 사용자 엔티티
  */
+@Getter
+@NoArgsConstructor
 public class User {
     @DocumentId
     private String id;
@@ -26,98 +33,51 @@ public class User {
     @ServerTimestamp
     private Date updatedAt;
     
-    // 기본 생성자
-    public User() {}
-    
     // 생성자
     public User(String email, String nickname) {
         this.email = email;
         this.nickname = nickname;
     }
     
-    // Getters and Setters
-    public String getId() {
-        return id;
-    }
-    
+    // Setters
     public void setId(String id) {
         this.id = id;
-    }
-    
-    public String getUid() {
-        return uid;
     }
     
     public void setUid(String uid) {
         this.uid = uid;
     }
     
-    public String getUsername() {
-        return username;
-    }
-    
     public void setUsername(String username) {
         this.username = username;
-    }
-    
-    public String getPassword() {
-        return password;
     }
     
     public void setPassword(String password) {
         this.password = password;
     }
     
-    public String getEmail() {
-        return email;
-    }
-    
     public void setEmail(String email) {
         this.email = email;
-    }
-    
-    public String getNickname() {
-        return nickname;
     }
     
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
     
-    public String getDisplayName() {
-        return displayName;
-    }
-    
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
-    }
-    
-    public String getProfileImageUrl() {
-        return profileImageUrl;
     }
     
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
     
-    public String getAuthProvider() {
-        return authProvider;
-    }
-    
     public void setAuthProvider(String authProvider) {
         this.authProvider = authProvider;
-    }
-    
-    public Date getCreatedAt() {
-        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
     }
 
     public void setUpdatedAt(Date updatedAt) {

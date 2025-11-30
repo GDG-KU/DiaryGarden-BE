@@ -49,15 +49,23 @@ src/main/resources/*-adminsdk-*.json
 **/*credential*.json
 **/*service-account*.json
 
-# 모든 resources의 JSON 파일
-src/main/resources/*.json
-
 ### Environment Variables ###
 .env
 .env.local
 .env.*.local
 env.example
 env.example.txt
+
+src/main/resources/application.properties
+
+### Scripts (Optional) ###
+*.sh
+!gradlew
+*.ps1
+
+### Documentation (Optional) ###
+*.md
+!README.md
 
 ### Test Files (Optional) ###
 test-payload.json

@@ -1,28 +1,31 @@
 package com.GDG.worktree.team2.gardening_diary.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.GDG.worktree.team2.gardening_diary.dto.AuthResponse;
 import com.GDG.worktree.team2.gardening_diary.dto.LoginRequest;
 import com.GDG.worktree.team2.gardening_diary.dto.RegisterRequest;
 import com.GDG.worktree.team2.gardening_diary.entity.User;
 import com.GDG.worktree.team2.gardening_diary.repository.UserRepository;
+import com.GDG.worktree.team2.gardening_diary.security.JwtProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 인증 서비스
  */
 @Service
+
 public class AuthService {
     
     @Autowired
     private UserRepository userRepository;
-    
     private FirebaseAuth firebaseAuth;
-    
+    private JwtProvider jwtProvider;
+
     /**
      * FirebaseAuth 인스턴스 가져오기 (지연 초기화)
      */
@@ -106,7 +109,7 @@ public class AuthService {
      */
     public AuthResponse verifyToken(String idToken) {
         try {
-            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(idToken);
+            FirebaseToken decodedToken = getFirebaseAuth().verifyIdToken(idToken);
             String uid = decodedToken.getUid();
             
             // Firestore에서 사용자 정보 조회
@@ -178,6 +181,19 @@ public class AuthService {
             System.err.println("사용자 삭제 실패: " + e.getMessage());
             return false;
         }
+    }
+
+    public AuthResponse generateTokenForSocialUser(User user) {
+        String token = jwtProvider.createToken(user.getUid());
+
+        AuthResponse response = new AuthResponse(); 
+    
+        response.setSuccess(true);
+        response.setMessage("소셜 로그인 성공");
+        response.setToken(token);
+        response.setUid(user.getUid());
+        
+        return response;
     }
 }
 

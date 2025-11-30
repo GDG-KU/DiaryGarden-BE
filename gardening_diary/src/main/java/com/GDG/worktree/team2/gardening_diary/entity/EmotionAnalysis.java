@@ -6,9 +6,14 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * 감정 분석 엔티티
  */
+@Getter
+@NoArgsConstructor
 public class EmotionAnalysis {
     @DocumentId
     private String id;
@@ -22,9 +27,6 @@ public class EmotionAnalysis {
     @ServerTimestamp
     private Date updatedAt;
     
-    // 기본 생성자
-    public EmotionAnalysis() {}
-    
     // 생성자
     public EmotionAnalysis(String diaryId, Map<String, Double> result) {
         this.diaryId = diaryId;
@@ -32,40 +34,20 @@ public class EmotionAnalysis {
     }
     
     // Getters and Setters
-    public String getId() {
-        return id;
-    }
-    
     public void setId(String id) {
         this.id = id;
-    }
-    
-    public String getDiaryId() {
-        return diaryId;
     }
     
     public void setDiaryId(String diaryId) {
         this.diaryId = diaryId;
     }
     
-    public Map<String, Double> getResult() {
-        return result;
-    }
-    
     public void setResult(Map<String, Double> result) {
         this.result = result;
-    }
-    
-    public Date getCreatedAt() {
-        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
     }
 
     public void setUpdatedAt(Date updatedAt) {

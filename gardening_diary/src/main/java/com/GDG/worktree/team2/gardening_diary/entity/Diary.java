@@ -6,9 +6,14 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 /**
  * 다이어리 엔티티
  */
+@Getter
+@NoArgsConstructor
 public class Diary {
     @DocumentId
     private String id;
@@ -24,9 +29,6 @@ public class Diary {
     @ServerTimestamp
     private Date updatedAt;
     
-    // 기본 생성자
-    public Diary() {}
-    
     // 생성자
     public Diary(String userId, String treeId, String content) {
         this.userId = userId;
@@ -36,56 +38,28 @@ public class Diary {
     }
     
     // Getters and Setters
-    public String getId() {
-        return id;
-    }
-    
     public void setId(String id) {
         this.id = id;
-    }
-    
-    public String getUserId() {
-        return userId;
     }
     
     public void setUserId(String userId) {
         this.userId = userId;
     }
     
-    public String getTreeId() {
-        return treeId;
-    }
-    
     public void setTreeId(String treeId) {
         this.treeId = treeId;
-    }
-    
-    public String getContent() {
-        return content;
     }
     
     public void setContent(String content) {
         this.content = content;
     }
     
-    public LocalDateTime getWrittenDate() {
-        return writtenDate;
-    }
-    
     public void setWrittenDate(LocalDateTime writtenDate) {
         this.writtenDate = writtenDate;
-    }
-    
-    public Date getCreatedAt() {
-        return createdAt;
     }
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
     }
 
     public void setUpdatedAt(Date updatedAt) {

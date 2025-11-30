@@ -98,5 +98,4 @@ public class GardeningDiaryApplication {
             throw new RuntimeException("Failed to access secret: " + secretName, e);
         }
     }
-    
 }
