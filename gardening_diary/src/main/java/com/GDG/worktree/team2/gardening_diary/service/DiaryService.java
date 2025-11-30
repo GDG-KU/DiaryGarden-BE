@@ -113,5 +113,12 @@ public class DiaryService {
             throws ExecutionException, InterruptedException {
         return diaryRepository.isOwner(diaryId, userId);
     }
+
+    /**
+     * 나무별 다이어리 조회
+     */
+    public java.util.List<Diary> getDiariesByTreeId(String treeId) throws ExecutionException, InterruptedException {
+        return diaryRepository.findByTreeId(treeId);
+    }
 }
 

@@ -1,9 +1,9 @@
 package com.GDG.worktree.team2.gardening_diary.entity;
 
-import com.google.cloud.firestore.annotation.DocumentId;
-import com.google.cloud.firestore.annotation.PropertyName;
-import com.google.cloud.firestore.annotation.ServerTimestamp;
 import java.util.Date;
+
+import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.ServerTimestamp;
 
 /**
  * Garden 엔티티
