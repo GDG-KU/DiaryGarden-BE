@@ -279,6 +279,8 @@ export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-
 ./deploy-gcp.sh
 ```
 
+### Base URL
+https://gardening-diary-258716291683.asia-northeast3.run.app
 
 
 
