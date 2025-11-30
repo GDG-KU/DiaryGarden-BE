@@ -15,8 +15,15 @@ import java.util.concurrent.ExecutionException;
 @Service
 public class DiaryService {
     
+    private final DiaryRepository diaryRepository;
+    private final EmotionAnalysisService emotionAnalysisService;
+
     @Autowired
-    private DiaryRepository diaryRepository;
+    public DiaryService(DiaryRepository diaryRepository,
+                        EmotionAnalysisService emotionAnalysisService) {
+        this.diaryRepository = diaryRepository;
+        this.emotionAnalysisService = emotionAnalysisService;
+    }
     
     /**
      * 다이어리 생성
@@ -27,7 +34,9 @@ public class DiaryService {
         diary.setTreeId(request.getTreeId());
         diary.setContent(request.getContent());
         
-        return diaryRepository.save(diary);
+        Diary saved = diaryRepository.save(diary);
+        emotionAnalysisService.analyzeAndSave(saved.getId(), saved.getContent());
+        return saved;
     }
     
     /**
@@ -76,7 +85,9 @@ public class DiaryService {
             existingDiary.setContent(request.getContent());
         }
         
-        return diaryRepository.save(existingDiary);
+        Diary updated = diaryRepository.save(existingDiary);
+        emotionAnalysisService.analyzeAndSave(updated.getId(), updated.getContent());
+        return updated;
     }
     
     /**
@@ -96,6 +107,7 @@ public class DiaryService {
         }
         
         diaryRepository.deleteById(diaryId);
+        emotionAnalysisService.deleteByDiaryId(diaryId);
         return true;
     }
     
