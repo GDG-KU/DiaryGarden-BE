@@ -7,7 +7,7 @@
 ### 1. GCP 프로젝트 정보
 - **프로젝트 ID**: `diarygarden-7bb2d`
 - **리전**: `asia-northeast3` (서울)
-- **Firebase 키 파일**: `src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json`
+- **Firebase 키 파일**: `src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json`
 
 ### 2. 필요한 API 활성화
 ```bash
@@ -61,11 +61,11 @@ docker push asia-northeast3-docker.pkg.dev/diarygarden-7bb2d/gardening-diary-rep
 ```bash
 # Secret 생성 (처음만)
 gcloud secrets create firebase-credentials \
-    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 
 # 또는 기존 Secret에 새 버전 추가
 gcloud secrets versions add firebase-credentials \
-    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 ```
 
 ### 6단계: Cloud Run에 배포
@@ -112,7 +112,7 @@ cd DiaryGarden-BE/gardening_diary
 
 # 환경 변수 설정
 export GCP_PROJECT_ID=diarygarden-7bb2d
-export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 
 # 배포 스크립트 실행
 chmod +x deploy-gcp.sh
@@ -261,7 +261,7 @@ docker push asia-northeast3-docker.pkg.dev/diarygarden-7bb2d/gardening-diary-rep
 
 # 4. Secret 생성 (처음만)
 gcloud secrets create firebase-credentials \
-    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+    --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 
 # 5. 배포
 gcloud run deploy gardening-diary \
@@ -275,7 +275,7 @@ gcloud run deploy gardening-diary \
 ### 기존 스크립트 사용
 ```bash
 export GCP_PROJECT_ID=diarygarden-7bb2d
-export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 ./deploy-gcp.sh
 ```
 

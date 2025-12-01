@@ -1,5 +1,7 @@
 package com.GDG.worktree.team2.gardening_diary.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,8 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 /**
  * Security 설정
@@ -38,7 +38,7 @@ public class SecurityConfig {
             // 인증 요구 설정
             .authorizeHttpRequests(auth -> auth
                 // 공개 엔드포인트
-                .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/login", "api/auth/google").permitAll()
                 
                 // 인증이 필요한 엔드포인트
                 .requestMatchers("/api/auth/**", "/api/diaries/**").authenticated()

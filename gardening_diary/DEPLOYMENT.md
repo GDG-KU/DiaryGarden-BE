@@ -17,7 +17,7 @@
    ```
 
 3. **Firebase 자격 증명 파일 준비**
-   - 파일 위치: `src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json`
+   - 파일 위치: `src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json`
 
 ## 배포 방법
 
@@ -28,7 +28,7 @@ cd DiaryGarden-BE/gardening_diary
 
 # 환경 변수 설정
 export GCP_PROJECT_ID=diarygarden-7bb2d
-export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+export FIREBASE_KEY_FILE=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 
 # 배포 스크립트 실행
 chmod +x deploy-gcp.sh
@@ -50,7 +50,7 @@ gcloud config set project diarygarden-7bb2d
 
 # 2. Secret Manager에 Firebase 자격 증명 저장
 gcloud secrets create firebase-credentials \
-  --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-eb51c377a7.json
+  --data-file=src/main/resources/diarygarden-7bb2d-firebase-adminsdk-fbsvc-a7cb0137c7.json
 
 # 3. Docker 이미지 빌드 및 푸시
 docker build -t gcr.io/diarygarden-7bb2d/gardening-diary:latest -f Dockerfile.prod .
