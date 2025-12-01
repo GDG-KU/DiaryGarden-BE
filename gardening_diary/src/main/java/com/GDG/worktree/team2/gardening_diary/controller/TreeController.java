@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * 나무 컨트롤러
  */
-@Tag(name = "나무 관리", description = "나무 생성, 조회, 수정, 삭제 API")
+@Tag(name = "05. 나무 관리", description = "나무 생성, 조회, 수정, 삭제 API")
 @RestController
 @RequestMapping("/api/trees")
 @CrossOrigin(origins = "*")

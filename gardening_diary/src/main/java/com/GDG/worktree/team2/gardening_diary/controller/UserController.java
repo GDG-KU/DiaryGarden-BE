@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
 
-@Tag(name = "사용자 관리", description = "사용자 CRUD API")
+@Tag(name = "03. 사용자 관리", description = "사용자 CRUD API")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 정원 컨트롤러
  */
-@Tag(name = "정원 관리", description = "정원 생성, 조회, 수정, 삭제 API")
+@Tag(name = "04. 정원 관리", description = "정원 생성, 조회, 수정, 삭제 API")
 @RestController
 @RequestMapping("/api/gardens")
 @CrossOrigin(origins = "*")

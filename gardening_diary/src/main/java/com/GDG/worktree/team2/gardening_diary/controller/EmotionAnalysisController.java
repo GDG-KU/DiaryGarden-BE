@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * 감정 분석 관련 API.
  */
-@Tag(name = "감정 분석", description = "다이어리 감정 분석 조회 및 재분석 API")
+@Tag(name = "07. 감정 분석", description = "다이어리 감정 분석 조회 및 재분석 API")
 @RestController
 @RequestMapping("/api/emotions")
 @CrossOrigin(origins = "*")

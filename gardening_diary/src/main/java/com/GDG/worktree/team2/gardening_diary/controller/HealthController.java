@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /**
  * 헬스체크 컨트롤러
  */
-@Tag(name = "헬스체크", description = "서비스 상태 확인 API")
+@Tag(name = "01. 헬스체크", description = "서비스 상태 확인 API")
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")

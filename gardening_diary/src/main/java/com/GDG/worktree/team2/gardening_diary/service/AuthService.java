@@ -41,7 +41,14 @@ public class AuthService {
         try {
             User existingUser = userRepository.findByUsername(request.getUsername());
             if (existingUser != null) {
-                return new AuthResponse("이미 존재하는 아이디입니다");
+                // 이미 존재하는 사용자면 자동 로그인 처리 후 토큰 반환
+                try {
+                    String customToken = firebaseAuth.createCustomToken(existingUser.getUid());
+                    return new AuthResponse(customToken, existingUser.getUid(),
+                            request.getUsername(), existingUser.getDisplayName());
+                } catch (FirebaseAuthException e) {
+                    return new AuthResponse("로그인 실패: " + e.getMessage());
+                }
             }
             
             String firebaseEmail = request.getUsername() + "@gardening-diary.app";
@@ -68,6 +75,19 @@ public class AuthService {
                     request.getUsername(), userRecord.getDisplayName());
             
         } catch (FirebaseAuthException e) {
+            // Firebase에 이미 존재하지만 Firestore에는 없는 경우 처리
+            if (e.getErrorCode() != null && e.getErrorCode().equals("auth/email-already-exists")) {
+                User existingUser = userRepository.findByUsername(request.getUsername());
+                if (existingUser != null) {
+                    try {
+                        String customToken = firebaseAuth.createCustomToken(existingUser.getUid());
+                        return new AuthResponse(customToken, existingUser.getUid(),
+                                request.getUsername(), existingUser.getDisplayName());
+                    } catch (FirebaseAuthException ex) {
+                        return new AuthResponse("로그인 실패: " + ex.getMessage());
+                    }
+                }
+            }
             return new AuthResponse("회원가입 실패: " + e.getMessage());
         } catch (Exception e) {
             return new AuthResponse("서버 오류가 발생했습니다: " + e.getMessage());
@@ -84,7 +104,13 @@ public class AuthService {
                 return new AuthResponse("비밀번호가 일치하지 않습니다");
             }
             
-            return new AuthResponse("", user.getUid(), request.getUsername(), user.getDisplayName());
+            // Custom Token 생성해서 반환
+            try {
+                String customToken = firebaseAuth.createCustomToken(user.getUid());
+                return new AuthResponse(customToken, user.getUid(), request.getUsername(), user.getDisplayName());
+            } catch (FirebaseAuthException e) {
+                return new AuthResponse("토큰 생성 실패: " + e.getMessage());
+            }
             
         } catch (Exception e) {
             return new AuthResponse("로그인 실패: " + e.getMessage());
