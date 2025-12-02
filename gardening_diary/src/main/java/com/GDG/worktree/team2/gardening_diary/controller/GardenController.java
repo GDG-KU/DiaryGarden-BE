@@ -10,16 +10,19 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 정원 컨트롤러
  */
 @Tag(name = "04. 정원 관리", description = "정원 생성, 조회, 수정, 삭제 API")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/gardens")
 @CrossOrigin(origins = "*")
@@ -41,8 +44,7 @@ public class GardenController {
     })
     @PostMapping
     public ResponseEntity<ApiResponse<Garden>> createOrUpdateGarden(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                 description = "정원 생성/수정 요청",
                 required = true,
@@ -51,8 +53,6 @@ public class GardenController {
             @Valid @org.springframework.web.bind.annotation.RequestBody GardenRequest request) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -107,12 +107,9 @@ public class GardenController {
     })
     @GetMapping
     public ResponseEntity<ApiResponse<Garden>> getUserGarden(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token) {
+            @AuthenticationPrincipal String userId) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -143,8 +140,7 @@ public class GardenController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Garden>> updateGarden(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @Parameter(description = "정원 ID", required = true, example = "garden123")
             @PathVariable String id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -155,8 +151,6 @@ public class GardenController {
             @Valid @org.springframework.web.bind.annotation.RequestBody GardenRequest request) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -184,14 +178,11 @@ public class GardenController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteGarden(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @Parameter(description = "정원 ID", required = true, example = "garden123")
             @PathVariable String id) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -208,27 +199,6 @@ public class GardenController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("정원 삭제 실패: " + e.getMessage()));
-        }
-    }
-    
-    /**
-     * 토큰에서 사용자 ID 추출하는 헬퍼 메서드
-     */
-    private String getUserIdFromToken(String token) {
-        try {
-            // Bearer 토큰에서 실제 토큰 추출
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
-            
-            com.google.firebase.auth.FirebaseToken decodedToken = 
-                    com.google.firebase.auth.FirebaseAuth.getInstance().verifyIdToken(token);
-            
-            return decodedToken.getUid();
-            
-        } catch (Exception e) {
-            System.err.println("토큰 검증 실패: " + e.getMessage());
-            return null;
         }
     }
 }

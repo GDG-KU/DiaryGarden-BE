@@ -32,8 +32,11 @@ public class FirebaseConfig {
 
         InputStream serviceAccount;
 
-        // 1. GCP Secret Manager에서 Firebase 자격 증명 확인
-        String firebaseSecret = System.getenv("FIREBASE_SECRET_NAME");
+        // 1. GCP Secret Manager에서 Firebase 자격 증명 확인 (환경변수 또는 시스템 프로퍼티)
+        String firebaseSecret = System.getProperty("FIREBASE_SECRET_NAME");
+        if (firebaseSecret == null || firebaseSecret.isEmpty()) {
+            firebaseSecret = System.getenv("FIREBASE_SECRET_NAME");
+        }
         if (firebaseSecret != null && !firebaseSecret.isEmpty()) {
             try {
                 // GCP Secret Manager에서 시크릿 가져오기
@@ -44,13 +47,19 @@ public class FirebaseConfig {
                 throw new RuntimeException("Firebase initialization failed", e);
             }
         }
-        // 2. 환경 변수에서 Firebase 자격 증명 확인
+        // 2. 환경 변수 또는 시스템 프로퍼티에서 Firebase 자격 증명 확인 (.env 파일에서 로드 가능)
         else {
-            String firebaseCredentials = System.getenv("FIREBASE_CREDENTIALS");
+            // 시스템 프로퍼티에서 먼저 확인 (.env 파일에서 로드한 값)
+            String firebaseCredentials = System.getProperty("FIREBASE_CREDENTIALS");
+            // 시스템 프로퍼티에 없으면 환경 변수에서 확인
+            if (firebaseCredentials == null || firebaseCredentials.isEmpty()) {
+                firebaseCredentials = System.getenv("FIREBASE_CREDENTIALS");
+            }
+            
             if (firebaseCredentials != null && !firebaseCredentials.isEmpty()) {
-                // 환경 변수에서 JSON을 읽어옴 (GCP 배포 시)
+                // 환경 변수 또는 시스템 프로퍼티에서 JSON을 읽어옴 (.env 파일 또는 GCP 배포 시)
                 serviceAccount = new java.io.ByteArrayInputStream(firebaseCredentials.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-                System.out.println("Firebase credentials loaded from environment variable.");
+                System.out.println("Firebase credentials loaded from environment variable or .env file.");
             } else {
                 // 로컬 개발 환경에서는 파일에서 읽어옴
                 // classpath: 접두사 제거

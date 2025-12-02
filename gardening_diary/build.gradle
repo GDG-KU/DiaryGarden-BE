@@ -48,6 +48,9 @@ dependencies {
 	// SpringDoc OpenAPI (Swagger UI)
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 	
+	// .env 파일 로드
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+	
 	// Lombok (선택사항)
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

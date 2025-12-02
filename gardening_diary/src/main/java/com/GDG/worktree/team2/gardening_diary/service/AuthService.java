@@ -1,9 +1,19 @@
 package com.GDG.worktree.team2.gardening_diary.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.GDG.worktree.team2.gardening_diary.dto.AuthResponse;
 import com.GDG.worktree.team2.gardening_diary.dto.LoginRequest;
 import com.GDG.worktree.team2.gardening_diary.dto.RegisterRequest;
@@ -25,13 +35,91 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final FirebaseAuth firebaseAuth;
+    private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
+    
+    @Value("${firebase.web-api-key:}")
+    private String firebaseWebApiKey;
+    
+    @Value("${gcp.project-id:diarygarden-7bb2d}")
+    private String projectId;
 
-    @Autowired
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider, FirebaseAuth firebaseAuth) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.firebaseAuth = firebaseAuth; // Spring Bean으로 주입
+        this.objectMapper = new ObjectMapper();
+        this.httpClient = HttpClient.newHttpClient();
+    }
+    
+    /**
+     * 환경변수에서 Firebase Web API Key 로드
+     */
+    @PostConstruct
+    public void init() {
+        // 우선순위: 시스템 프로퍼티 > 환경변수 > application.yml
+        String apiKey = System.getProperty("FIREBASE_WEB_API_KEY");
+        if (apiKey == null || apiKey.isEmpty()) {
+            apiKey = System.getenv("FIREBASE_WEB_API_KEY");
+        }
+        if (apiKey == null || apiKey.isEmpty()) {
+            apiKey = this.firebaseWebApiKey; // application.yml에서 읽은 값
+        }
+        
+        // 따옴표 제거 (있는 경우)
+        if (apiKey != null && !apiKey.isEmpty()) {
+            apiKey = apiKey.replaceAll("^\"|\"$", "").replaceAll("^'|'$", "").trim();
+            this.firebaseWebApiKey = apiKey;
+        }
+        
+        System.out.println("Firebase Web API Key loaded: " + (this.firebaseWebApiKey != null && !this.firebaseWebApiKey.isEmpty() ? "Yes (length: " + this.firebaseWebApiKey.length() + ")" : "No"));
+    }
+    
+    /**
+     * Custom Token을 Firebase ID Token으로 변환
+     */
+    private String exchangeCustomTokenForIdToken(String customToken) throws IOException, InterruptedException {
+        if (firebaseWebApiKey == null || firebaseWebApiKey.isEmpty()) {
+            throw new IllegalStateException("Firebase Web API Key가 설정되지 않았습니다. .env 파일에 FIREBASE_WEB_API_KEY를 설정해주세요.");
+        }
+        
+        System.out.println("Custom Token을 ID Token으로 변환 시도 중...");
+        
+        String url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=" + firebaseWebApiKey;
+        
+        Map<String, String> requestBody = Map.of(
+            "token", customToken,
+            "returnSecureToken", "true"
+        );
+        
+        String jsonBody = objectMapper.writeValueAsString(requestBody);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        System.out.println("Firebase REST API 응답 상태 코드: " + response.statusCode());
+        
+        if (response.statusCode() == 200) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> responseBody = objectMapper.readValue(response.body(), Map.class);
+            String idToken = (String) responseBody.get("idToken");
+            if (idToken != null && !idToken.isEmpty()) {
+                System.out.println("Firebase ID Token 획득 성공!");
+                return idToken;
+            } else {
+                System.err.println("응답에 idToken이 없습니다: " + response.body());
+                throw new IOException("Firebase ID Token을 받아올 수 없습니다. 응답: " + response.body());
+            }
+        } else {
+            System.err.println("Firebase ID Token 변환 실패: " + response.body());
+            throw new IOException("Failed to exchange custom token: HTTP " + response.statusCode() + " - " + response.body());
+        }
     }
     
     /**
@@ -41,12 +129,13 @@ public class AuthService {
         try {
             User existingUser = userRepository.findByUsername(request.getUsername());
             if (existingUser != null) {
-                // 이미 존재하는 사용자면 자동 로그인 처리 후 토큰 반환
+                // 이미 존재하는 사용자면 자동 로그인 처리 후 ID Token 반환
                 try {
                     String customToken = firebaseAuth.createCustomToken(existingUser.getUid());
-                    return new AuthResponse(customToken, existingUser.getUid(),
+                    String idToken = exchangeCustomTokenForIdToken(customToken);
+                    return new AuthResponse(idToken, existingUser.getUid(),
                             request.getUsername(), existingUser.getDisplayName());
-                } catch (FirebaseAuthException e) {
+                } catch (FirebaseAuthException | IOException | InterruptedException e) {
                     return new AuthResponse("로그인 실패: " + e.getMessage());
                 }
             }
@@ -69,10 +158,15 @@ public class AuthService {
             
             userRepository.save(user);
             
-            String customToken = firebaseAuth.createCustomToken(userRecord.getUid());
-            
-            return new AuthResponse(customToken, userRecord.getUid(),
-                    request.getUsername(), userRecord.getDisplayName());
+            // Custom Token 생성 후 Firebase ID Token으로 변환
+            try {
+                String customToken = firebaseAuth.createCustomToken(userRecord.getUid());
+                String idToken = exchangeCustomTokenForIdToken(customToken);
+                return new AuthResponse(idToken, userRecord.getUid(),
+                        request.getUsername(), userRecord.getDisplayName());
+            } catch (FirebaseAuthException | IOException | InterruptedException tokenEx) {
+                return new AuthResponse("ID Token 생성 실패: " + tokenEx.getMessage());
+            }
             
         } catch (FirebaseAuthException e) {
             // Firebase에 이미 존재하지만 Firestore에는 없는 경우 처리
@@ -81,10 +175,11 @@ public class AuthService {
                 if (existingUser != null) {
                     try {
                         String customToken = firebaseAuth.createCustomToken(existingUser.getUid());
-                        return new AuthResponse(customToken, existingUser.getUid(),
+                        String idToken = exchangeCustomTokenForIdToken(customToken);
+                        return new AuthResponse(idToken, existingUser.getUid(),
                                 request.getUsername(), existingUser.getDisplayName());
-                    } catch (FirebaseAuthException ex) {
-                        return new AuthResponse("로그인 실패: " + ex.getMessage());
+                    } catch (FirebaseAuthException | IOException | InterruptedException tokenEx) {
+                        return new AuthResponse("로그인 실패: " + tokenEx.getMessage());
                     }
                 }
             }
@@ -104,12 +199,15 @@ public class AuthService {
                 return new AuthResponse("비밀번호가 일치하지 않습니다");
             }
             
-            // Custom Token 생성해서 반환
+            // Custom Token 생성 후 Firebase ID Token으로 변환
             try {
                 String customToken = firebaseAuth.createCustomToken(user.getUid());
-                return new AuthResponse(customToken, user.getUid(), request.getUsername(), user.getDisplayName());
-            } catch (FirebaseAuthException e) {
-                return new AuthResponse("토큰 생성 실패: " + e.getMessage());
+                System.out.println("Custom Token 생성 완료");
+                
+                String idToken = exchangeCustomTokenForIdToken(customToken);
+                return new AuthResponse(idToken, user.getUid(), request.getUsername(), user.getDisplayName());
+            } catch (FirebaseAuthException | IOException | InterruptedException e) {
+                return new AuthResponse("ID Token 생성 실패: " + e.getMessage());
             }
             
         } catch (Exception e) {
@@ -172,13 +270,22 @@ public class AuthService {
     }
 
     public AuthResponse generateTokenForSocialUser(User user) {
-        String token = jwtProvider.createToken(user.getUid());
-
-        AuthResponse response = new AuthResponse();
-        response.setSuccess(true);
-        response.setMessage("소셜 로그인 성공");
-        response.setToken(token);
-        response.setUid(user.getUid());
-        return response;
+        try {
+            // Custom Token 생성 후 Firebase ID Token으로 변환
+            String customToken = firebaseAuth.createCustomToken(user.getUid());
+            String idToken = exchangeCustomTokenForIdToken(customToken);
+            
+            AuthResponse response = new AuthResponse();
+            response.setSuccess(true);
+            response.setMessage("소셜 로그인 성공");
+            response.setToken(idToken);
+            response.setUid(user.getUid());
+            return response;
+        } catch (Exception e) {
+            AuthResponse response = new AuthResponse();
+            response.setSuccess(false);
+            response.setMessage("토큰 생성 실패: " + e.getMessage());
+            return response;
+        }
     }
 }

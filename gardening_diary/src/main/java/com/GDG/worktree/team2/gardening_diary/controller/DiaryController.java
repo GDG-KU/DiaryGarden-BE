@@ -19,12 +19,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * 다이어리 컨트롤러
  */
 @Tag(name = "06. 다이어리 관리", description = "다이어리 생성, 조회, 수정, 삭제 API")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/diaries")
 @CrossOrigin(origins = "*")

@@ -23,6 +23,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
     
+    private final FirebaseTokenFilter firebaseTokenFilter;
+    
+    public SecurityConfig(FirebaseTokenFilter firebaseTokenFilter) {
+        this.firebaseTokenFilter = firebaseTokenFilter;
+    }
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -46,16 +52,10 @@ public class SecurityConfig {
                 // 기타 모든 요청은 허용 (개발용)
                 .anyRequest().permitAll()
             )
-            // Firebase 토큰 필터 등록
-            .addFilterBefore(firebaseTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+            // Firebase 토큰 필터 등록 (자동 주입된 빈 사용)
+            .addFilterBefore(firebaseTokenFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
-    }
-    
-    // FirebaseTokenFilter 빈
-    @Bean
-    public FirebaseTokenFilter firebaseTokenFilter() {
-        return new FirebaseTokenFilter();
     }
 
     @Bean

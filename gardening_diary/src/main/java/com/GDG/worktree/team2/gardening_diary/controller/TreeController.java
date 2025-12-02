@@ -17,12 +17,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
  * 나무 컨트롤러
  */
 @Tag(name = "05. 나무 관리", description = "나무 생성, 조회, 수정, 삭제 API")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/trees")
 @CrossOrigin(origins = "*")
@@ -44,8 +47,7 @@ public class TreeController {
     })
     @PostMapping
     public ResponseEntity<ApiResponse<Tree>> createTree(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                 description = "나무 생성 요청",
                 required = true,
@@ -54,8 +56,6 @@ public class TreeController {
             @Valid @org.springframework.web.bind.annotation.RequestBody TreeRequest request) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -110,14 +110,11 @@ public class TreeController {
     })
     @GetMapping
     public ResponseEntity<ApiResponse<List<Tree>>> getUserTrees(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @Parameter(description = "나무 상태 필터 (선택사항: active, inactive, completed)", example = "active")
             @RequestParam(required = false) String status) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -149,8 +146,7 @@ public class TreeController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Tree>> updateTree(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @Parameter(description = "나무 ID", required = true, example = "tree123")
             @PathVariable String id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -161,8 +157,6 @@ public class TreeController {
             @Valid @org.springframework.web.bind.annotation.RequestBody TreeRequest request) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -190,14 +184,11 @@ public class TreeController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteTree(
-            @Parameter(description = "Firebase 인증 토큰 (Bearer 토큰)", required = true, example = "Bearer eyJhbGciOiJSUzI1NiIs...")
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal String userId,
             @Parameter(description = "나무 ID", required = true, example = "tree123")
             @PathVariable String id) {
         
         try {
-            // 토큰 검증 및 사용자 ID 추출
-            String userId = getUserIdFromToken(token);
             if (userId == null) {
                 return ResponseEntity.badRequest().body(new ApiResponse<>("인증이 필요합니다"));
             }
@@ -214,27 +205,6 @@ public class TreeController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse<>("나무 삭제 실패: " + e.getMessage()));
-        }
-    }
-    
-    /**
-     * 토큰에서 사용자 ID 추출하는 헬퍼 메서드
-     */
-    private String getUserIdFromToken(String token) {
-        try {
-            // Bearer 토큰에서 실제 토큰 추출
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
-            
-            com.google.firebase.auth.FirebaseToken decodedToken = 
-                    com.google.firebase.auth.FirebaseAuth.getInstance().verifyIdToken(token);
-            
-            return decodedToken.getUid();
-            
-        } catch (Exception e) {
-            System.err.println("토큰 검증 실패: " + e.getMessage());
-            return null;
         }
     }
 }
